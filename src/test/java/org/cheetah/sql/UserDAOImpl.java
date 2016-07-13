@@ -1,0 +1,100 @@
+/*
+ * Copyright (C) 2016 fabien.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301  USA
+ */
+package org.cheetah.sql;
+
+import java.util.List;
+import java.util.Optional;
+
+/**
+ *
+ * @author Fabien Barbero
+ */
+class UserDAOImpl
+        implements UserDAO, SQLRecordMapper<User>
+{
+
+    private final SQLExecutor executor;
+
+    public UserDAOImpl( SQLTransaction tx )
+    {
+        executor = new SQLExecutor( tx );
+    }
+
+    @Override
+    public User buildEntity( SQLRecord record )
+    {
+        User user = new User();
+        user.setUuid( record.getString( "UUID" ).get() );
+        user.setEmail( record.getString( "EMAIL" ).get() );
+        user.setName( record.getString( "NAME" ).get() );
+        return user;
+    }
+
+    @Override
+    public void addEntity( User entity )
+            throws SQLFaultException
+    {
+        executor.execute( SQLQuery.of( "insert into USERS (UUID, EMAIL, NAME) values (?,?,?)",
+                                       entity.getUuid(), entity.getEmail(), entity.getName() ) );
+    }
+
+    @Override
+    public void updateEntity( User entity )
+            throws SQLFaultException
+    {
+        executor.execute( SQLQuery.of( "update USERS set EMAIL=?, NAME=? where UUID=?",
+                                       entity.getEmail(), entity.getName(), entity.getUuid() ) );
+    }
+
+    @Override
+    public User findByEmail( String email )
+            throws SQLFaultException
+    {
+        return executor.querySingle( this, SQLQuery.of( "select * from USERS where EMAIL=?", email ) ).orElse( null );
+    }
+
+    @Override
+    public List<User> findAll()
+            throws SQLFaultException
+    {
+        return executor.query( this, SQLQuery.of( "select * from USERS" ) );
+    }
+
+    @Override
+    public Optional<User> find( String key )
+            throws SQLFaultException
+    {
+        return executor.querySingle( this, SQLQuery.of( "select * from USERS where UUID=?", key ) );
+    }
+
+    @Override
+    public void deleteEntity( String key )
+            throws SQLFaultException
+    {
+        executor.execute( SQLQuery.of( "delete from USERS where UUID=?", key ) );
+    }
+
+    @Override
+    public void deleteEntity( User entity )
+            throws SQLFaultException
+    {
+        executor.execute( SQLQuery.of( "delete from USERS where UUID=?", entity.getUuid() ) );
+    }
+
+}
