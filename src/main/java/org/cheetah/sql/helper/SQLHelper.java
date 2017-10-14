@@ -25,6 +25,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.cheetah.sql.HasSQLConnection;
 import org.cheetah.sql.SQLFaultException;
 import org.cheetah.sql.SQLTransaction;
 
@@ -42,9 +44,9 @@ public class SQLHelper
         this.conn = conn;
     }
 
-    public SQLHelper( SQLTransaction tx )
+    public SQLHelper( HasSQLConnection conn )
     {
-        this.conn = tx.conn;
+        this.conn = conn.getConnection();
     }
 
     /**

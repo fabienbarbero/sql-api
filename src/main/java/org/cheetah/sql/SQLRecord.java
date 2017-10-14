@@ -287,7 +287,7 @@ public class SQLRecord
      * @return The optional Instant value
      * @throws SQLFaultException If the column is unknown or if the value cannot be returned
      */
-    public Optional<Instant> toInstant( String column )
+    public Optional<Instant> getInstant( String column )
             throws SQLFaultException
     {
         try {

@@ -24,7 +24,6 @@ import java.sql.SQLException;
 import java.util.Iterator;
 
 /**
- *
  * @author Fabien Barbero
  */
 public class SQLIterator<T>
@@ -60,10 +59,13 @@ public class SQLIterator<T>
 
     @Override
     public void close()
-            throws Exception
     {
-        rs.close();
-        st.close();
+        try {
+            rs.close();
+            st.close();
+        } catch ( SQLException ex ) {
+            throw new SQLFaultException( "Error closing SQL transaction", ex );
+        }
     }
 
 }

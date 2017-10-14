@@ -86,15 +86,15 @@ public class SQLExecutor
      * @return The optional entity found
      * @throws SQLFaultException Query error
      */
-    public <T> Optional<T> querySingle( SQLRecordMapper<T> mapper, SQLQuery query )
+    public <T> T querySingle( SQLRecordMapper<T> mapper, SQLQuery query )
             throws SQLFaultException
     {
         try (PreparedStatement st = prepareStatement( query )) {
             try (ResultSet rs = st.executeQuery()) {
                 while ( rs.next() ) {
-                    return Optional.of( mapper.buildEntity( new SQLRecord( rs ) ) );
+                    return mapper.buildEntity( new SQLRecord( rs ) );
                 }
-                return Optional.empty();
+                return null;
             }
 
         } catch ( SQLException ex ) {

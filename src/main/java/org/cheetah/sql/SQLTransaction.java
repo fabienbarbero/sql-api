@@ -27,7 +27,7 @@ import javax.sql.DataSource;
  * @author Fabien Barbero
  */
 public class SQLTransaction
-        implements AutoCloseable
+        implements AutoCloseable, HasSQLConnection
 {
 
     /**
@@ -96,7 +96,7 @@ public class SQLTransaction
         }
     }
 
-    public final Connection conn;
+    private final Connection conn;
 
     private SQLTransaction( Connection conn )
     {
@@ -160,6 +160,12 @@ public class SQLTransaction
         } catch ( SQLException ex ) {
             throw new SQLFaultException( "Error closing SQL transaction", ex );
         }
+    }
+
+    @Override
+    public Connection getConnection()
+    {
+        return conn;
     }
 
     public enum IsolationLevel
