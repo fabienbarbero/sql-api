@@ -66,7 +66,7 @@ class UserDAOImpl
     public User findByEmail( String email )
             throws SQLFaultException
     {
-        return executor.querySingle( this, SQLQuery.of( "select * from USERS where EMAIL=?", email ) ).orElse( null );
+        return executor.querySingle( this, SQLQuery.of( "select * from USERS where EMAIL=?", email ) );
     }
 
     @Override
@@ -77,7 +77,7 @@ class UserDAOImpl
     }
 
     @Override
-    public Optional<User> find( String key )
+    public User find( String key )
             throws SQLFaultException
     {
         return executor.querySingle( this, SQLQuery.of( "select * from USERS where UUID=?", key ) );

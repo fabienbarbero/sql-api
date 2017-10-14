@@ -38,7 +38,7 @@ public interface BaseDAO<T extends Entity, PK>
      * @return The optional entity found
      * @throws SQLFaultException SQL error
      */
-    Optional<T> find( PK key )
+    T find( PK key )
             throws SQLFaultException;
 
     /**

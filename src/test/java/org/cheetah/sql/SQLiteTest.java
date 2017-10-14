@@ -77,16 +77,16 @@ public class SQLiteTest
             userDAO.addEntity( user );
 
             assertEquals( 1, exec.count( SQLQuery.of( "select count(*) from USERS" ) ) );
-            assertEquals( user, userDAO.find( user.getUuid() ).get() );
+            assertEquals( user, userDAO.find( user.getUuid() ) );
             assertEquals( user, userDAO.findByEmail( "john@doe.com" ) );
             assertEquals( "john doe", userDAO.findByEmail( "john@doe.com" ).getName() );
             assertEquals( "john@doe.com", userDAO.findByEmail( "john@doe.com" ).getEmail() );
 
-            assertFalse( userDAO.find( "1234567890" ).isPresent() );
+            assertNotNull( userDAO.find( "1234567890" ) );
             assertNull( userDAO.findByEmail( "jane@doe.com" ) );
 
             userDAO.deleteEntity( user );
-            assertFalse( userDAO.find( user.getUuid() ).isPresent() );
+            assertNull( userDAO.find( user.getUuid() ) );
         }
     }
 

@@ -28,12 +28,11 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
- *
  * @author Fabien Barbero
  */
 public class SQLExecutor
@@ -45,10 +44,10 @@ public class SQLExecutor
     {
         this.conn = conn;
     }
-    
-    public SQLExecutor( SQLTransaction tx )
+
+    public SQLExecutor( HasSQLConnection tx )
     {
-        this.conn = tx.conn;
+        this.conn = tx.getConnection();
     }
 
     /**
@@ -63,8 +62,8 @@ public class SQLExecutor
     public <T> List<T> query( SQLRecordMapper<T> mapper, SQLQuery query )
             throws SQLFaultException
     {
-        try (PreparedStatement st = prepareStatement( query )) {
-            try (ResultSet rs = st.executeQuery()) {
+        try ( PreparedStatement st = prepareStatement( query ) ) {
+            try ( ResultSet rs = st.executeQuery() ) {
                 List<T> list = new ArrayList<>();
                 while ( rs.next() ) {
                     list.add( mapper.buildEntity( new SQLRecord( rs ) ) );
@@ -89,8 +88,8 @@ public class SQLExecutor
     public <T> T querySingle( SQLRecordMapper<T> mapper, SQLQuery query )
             throws SQLFaultException
     {
-        try (PreparedStatement st = prepareStatement( query )) {
-            try (ResultSet rs = st.executeQuery()) {
+        try ( PreparedStatement st = prepareStatement( query ) ) {
+            try ( ResultSet rs = st.executeQuery() ) {
                 while ( rs.next() ) {
                     return mapper.buildEntity( new SQLRecord( rs ) );
                 }
@@ -128,6 +127,13 @@ public class SQLExecutor
         }
     }
 
+    public <T> Stream<T> queryAsStream( SQLRecordMapper<T> mapper, Integer fetchSize, SQLQuery query )
+    {
+        SQLIterator<T> iterator = queryIterator( mapper, fetchSize, query );
+        Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize( iterator, Spliterator.ORDERED | Spliterator.IMMUTABLE );
+        return StreamSupport.stream( spliterator, false );
+    }
+
     /**
      * Execute a "count" query
      *
@@ -138,8 +144,8 @@ public class SQLExecutor
     public int count( SQLQuery query )
             throws SQLFaultException
     {
-        try (PreparedStatement st = prepareStatement( query )) {
-            try (ResultSet rs = st.executeQuery()) {
+        try ( PreparedStatement st = prepareStatement( query ) ) {
+            try ( ResultSet rs = st.executeQuery() ) {
                 if ( rs.next() ) {
                     return rs.getInt( 1 );
                 }
@@ -161,7 +167,7 @@ public class SQLExecutor
     public int execute( SQLQuery query )
             throws SQLFaultException
     {
-        try (PreparedStatement st = prepareStatement( query )) {
+        try ( PreparedStatement st = prepareStatement( query ) ) {
             return st.executeUpdate();
 
         } catch ( SQLException ex ) {
