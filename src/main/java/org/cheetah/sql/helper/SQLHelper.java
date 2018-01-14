@@ -18,6 +18,9 @@
  */
 package org.cheetah.sql.helper;
 
+import org.cheetah.sql.HasSQLConnection;
+import org.cheetah.sql.SQLFaultException;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -26,12 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.cheetah.sql.HasSQLConnection;
-import org.cheetah.sql.SQLFaultException;
-import org.cheetah.sql.SQLTransaction;
-
 /**
- *
  * @author Fabien Barbero
  */
 public class SQLHelper
@@ -61,7 +59,7 @@ public class SQLHelper
     {
         try {
             DatabaseMetaData metaData = conn.getMetaData();
-            try (ResultSet rs = metaData.getTables( null, null, tableName, null )) {
+            try ( ResultSet rs = metaData.getTables( null, null, tableName, null ) ) {
                 return rs.next();
             }
 
@@ -83,7 +81,7 @@ public class SQLHelper
     {
         try {
             DatabaseMetaData metaData = conn.getMetaData();
-            try (ResultSet rs = metaData.getColumns( null, null, tableName, columnName )) {
+            try ( ResultSet rs = metaData.getColumns( null, null, tableName, columnName ) ) {
                 return rs.next();
             }
 
@@ -103,7 +101,7 @@ public class SQLHelper
     {
         try {
             DatabaseMetaData metaData = conn.getMetaData();
-            try (ResultSet rs = metaData.getTables( null, null, "%", null )) {
+            try ( ResultSet rs = metaData.getTables( null, null, "%", null ) ) {
                 List<SQLTable> tables = new ArrayList<>();
                 while ( rs.next() ) {
                     String tableName = rs.getString( "TABLE_NAME" );
@@ -122,7 +120,7 @@ public class SQLHelper
     {
         try {
             DatabaseMetaData metaData = conn.getMetaData();
-            try (ResultSet rs = metaData.getTables( null, null, tableName, null )) {
+            try ( ResultSet rs = metaData.getTables( null, null, tableName, null ) ) {
                 if ( rs.next() ) {
                     return new SQLTable( tableName, getColumns( tableName, metaData ) );
                 }
@@ -141,7 +139,7 @@ public class SQLHelper
         List<SQLIndex> indexes = getIndexes( tableName, metaData );
         List<SQLForeignKey> foreignKeys = getForeignKeys( tableName, metaData );
 
-        try (ResultSet rs = metaData.getColumns( null, null, tableName, null )) {
+        try ( ResultSet rs = metaData.getColumns( null, null, tableName, null ) ) {
             List<SQLColumn> columns = new ArrayList<>();
             while ( rs.next() ) {
                 String colName = rs.getString( "COLUMN_NAME" );
@@ -152,11 +150,7 @@ public class SQLHelper
                         .filter( key -> key.getFKColumnName().equalsIgnoreCase( colName ) )
                         .collect( Collectors.toList() );
 
-                columns.add( new SQLColumn( colName,
-                                            rs.getInt( "DATA_TYPE" ),
-                                            rs.getInt( "COLUMN_SIZE" ),
-                                            rs.getBoolean( "NULLABLE" ),
-                                            primaryColumns.contains( colName ),
+                columns.add( new SQLColumn( rs, primaryColumns.contains( colName ),
                                             tableName, colIndexes, colForeignKeys ) );
             }
             return columns;
@@ -166,14 +160,10 @@ public class SQLHelper
     private List<SQLForeignKey> getForeignKeys( String tableName, DatabaseMetaData metaData )
             throws SQLException
     {
-        try (ResultSet rs = metaData.getImportedKeys( null, null, tableName )) {
+        try ( ResultSet rs = metaData.getImportedKeys( null, null, tableName ) ) {
             List<SQLForeignKey> keys = new ArrayList<>();
             while ( rs.next() ) {
-                keys.add( new SQLForeignKey( rs.getString( "FK_NAME" ),
-                                             rs.getString( "PKTABLE_NAME" ),
-                                             rs.getString( "PKCOLUMN_NAME" ),
-                                             rs.getString( "FKTABLE_NAME" ),
-                                             rs.getString( "FKCOLUMN_NAME" ),
+                keys.add( new SQLForeignKey( rs,
                                              SQLForeignKey.Rule.from( rs.getShort( "UPDATE_RULE" ) ),
                                              SQLForeignKey.Rule.from( rs.getShort( "DELETE_RULE" ) )
                 ) );
@@ -185,7 +175,7 @@ public class SQLHelper
     private List<String> getPrimaryKeys( String tableName, DatabaseMetaData metaData )
             throws SQLException
     {
-        try (ResultSet rs = metaData.getImportedKeys( null, null, tableName )) {
+        try ( ResultSet rs = metaData.getImportedKeys( null, null, tableName ) ) {
             List<String> keys = new ArrayList<>();
             while ( rs.next() ) {
                 keys.add( rs.getString( "PKCOLUMN_NAME" ) );
@@ -197,13 +187,10 @@ public class SQLHelper
     private List<SQLIndex> getIndexes( String tableName, DatabaseMetaData metaData )
             throws SQLException
     {
-        try (ResultSet rs = metaData.getIndexInfo( null, null, tableName, false, false )) {
+        try ( ResultSet rs = metaData.getIndexInfo( null, null, tableName, false, false ) ) {
             List<SQLIndex> indexes = new ArrayList<>();
             while ( rs.next() ) {
-                indexes.add( new SQLIndex( rs.getString( "TABLE_NAME" ),
-                                           rs.getString( "INDEX_NAME" ),
-                                           rs.getString( "COLUMN_NAME" ),
-                                           SQLIndex.Ordering.from( rs.getString( "ASC_OR_DESC" ) ) ) );
+                indexes.add( new SQLIndex( rs ) );
             }
             return indexes;
         }

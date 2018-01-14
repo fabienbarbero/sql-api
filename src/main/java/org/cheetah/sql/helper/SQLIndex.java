@@ -18,11 +18,12 @@
  */
 package org.cheetah.sql.helper;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Objects;
 
 /**
- *
  * @author Fabien Barbero
  */
 public class SQLIndex
@@ -33,15 +34,13 @@ public class SQLIndex
     private final String columnName;
     private final Ordering ordering;
 
-    SQLIndex( String tableName,
-              String name,
-              String columnName,
-              Ordering ordering )
+    SQLIndex( ResultSet rs )
+            throws SQLException
     {
-        this.name = name;
-        this.tableName = tableName;
-        this.columnName = columnName;
-        this.ordering = ordering;
+        this.name = rs.getString( "TABLE_NAME" );
+        this.tableName = rs.getString( "INDEX_NAME" );
+        this.columnName = rs.getString( "COLUMN_NAME" );
+        this.ordering = Ordering.from( rs.getString( "ASC_OR_DESC" ) );
     }
 
     /**
@@ -90,8 +89,8 @@ public class SQLIndex
         if ( obj instanceof SQLIndex ) {
             SQLIndex index = ( SQLIndex ) obj;
             return name.equals( index.name )
-                   && tableName.equals( index.tableName )
-                   && columnName.equals( index.columnName );
+                    && tableName.equals( index.tableName )
+                    && columnName.equals( index.columnName );
 
         }
         return false;
@@ -114,12 +113,12 @@ public class SQLIndex
 
         private final String value;
 
-        private Ordering( String value )
+        Ordering( String value )
         {
             this.value = value;
         }
 
-        static Ordering from( String value )
+        private static Ordering from( String value )
         {
             return Arrays.stream( values() )
                     .filter( o -> o.value.equals( value ) )

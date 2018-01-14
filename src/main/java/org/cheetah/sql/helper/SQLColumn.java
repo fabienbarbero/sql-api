@@ -18,6 +18,8 @@
  */
 package org.cheetah.sql.helper;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
 
@@ -37,19 +39,17 @@ public class SQLColumn
     private final List<SQLIndex> indexes;
     private final List<SQLForeignKey> foreignKeys;
 
-    SQLColumn( String name,
-               int type,
-               int size,
-               boolean nullable,
+    SQLColumn( ResultSet rs,
                boolean primary,
                String tableName,
                List<SQLIndex> indexes,
                List<SQLForeignKey> foreignKeys )
+            throws SQLException
     {
-        this.name = name;
-        this.type = type;
-        this.size = size;
-        this.nullable = nullable;
+        this.name = rs.getString( "COLUMN_NAME" );
+        this.type = rs.getInt( "DATA_TYPE" );
+        this.size = rs.getInt( "COLUMN_SIZE" );
+        this.nullable = rs.getBoolean( "NULLABLE" );
         this.primary = primary;
         this.tableName = tableName;
         this.indexes = indexes;

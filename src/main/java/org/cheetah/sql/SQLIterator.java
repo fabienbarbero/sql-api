@@ -46,7 +46,7 @@ public class SQLIterator<T>
     {
         try {
             return rs.next();
-        } catch ( SQLException ex ) {
+        } catch( SQLException ex ) {
             throw new SQLFaultException( "Error getting next entity", ex );
         }
     }
@@ -57,13 +57,27 @@ public class SQLIterator<T>
         return mapper.buildEntity( new SQLRecord( rs ) );
     }
 
+    /**
+     * Delete the current entity
+     */
+    @Override
+    public void remove()
+    {
+        try {
+            rs.deleteRow();
+        } catch( SQLException ex ) {
+            throw new SQLFaultException( "Error deleting entity", ex );
+        }
+    }
+
+
     @Override
     public void close()
     {
         try {
             rs.close();
             st.close();
-        } catch ( SQLException ex ) {
+        } catch( SQLException ex ) {
             throw new SQLFaultException( "Error closing SQL transaction", ex );
         }
     }

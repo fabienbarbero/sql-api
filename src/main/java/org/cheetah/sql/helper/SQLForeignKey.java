@@ -19,6 +19,8 @@
 package org.cheetah.sql.helper;
 
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -37,19 +39,16 @@ public class SQLForeignKey
     private final Rule updateRule;
     private final Rule deleteRule;
 
-    SQLForeignKey( String name,
-                   String pkTableName,
-                   String pkColumnName,
-                   String fkTableName,
-                   String fkColumnName,
+    SQLForeignKey( ResultSet rs,
                    Rule updateRule,
                    Rule deleteRule )
+            throws SQLException
     {
-        this.name = name;
-        this.pkTableName = pkTableName;
-        this.pkColumnName = pkColumnName;
-        this.fkTableName = fkTableName;
-        this.fkColumnName = fkColumnName;
+        this.name = rs.getString( "FK_NAME" );
+        this.pkTableName = rs.getString( "PKTABLE_NAME" );
+        this.pkColumnName = rs.getString( "PKCOLUMN_NAME" );
+        this.fkTableName = rs.getString( "FKTABLE_NAME" );
+        this.fkColumnName = rs.getString( "FKCOLUMN_NAME" );
         this.updateRule = updateRule;
         this.deleteRule = deleteRule;
     }

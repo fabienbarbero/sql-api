@@ -19,21 +19,12 @@
 package org.cheetah.sql;
 
 import java.math.BigDecimal;
-import java.sql.Blob;
-import java.sql.Clob;
+import java.sql.*;
 import java.sql.Date;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Represents a SQL record (row). It uses {@link Optional} objects for columns values.
@@ -56,16 +47,17 @@ public class SQLRecord
      * @return The columns
      * @throws SQLFaultException If the columns names cannot be returned
      */
-    public Set<String> getColumns()
+    public List<Column> getColumns()
             throws SQLFaultException
     {
         try {
             ResultSetMetaData metaData = rs.getMetaData();
-            Set<String> columns = new HashSet<>( metaData.getColumnCount() );
+            List<Column> columns = new ArrayList<>( metaData.getColumnCount() );
             for ( int i = 0; i < metaData.getColumnCount(); i++ ) {
-                columns.add( metaData.getColumnName( i ) );
+                columns.add( new Column( metaData.getColumnName( i + 1 ),
+                                         metaData.getTableName( i + 1 ) ) );
             }
-            return Collections.unmodifiableSet( columns );
+            return Collections.unmodifiableList( columns );
 
         } catch ( SQLException ex ) {
             throw new SQLFaultException( "Error getting columns names", ex );
@@ -75,7 +67,7 @@ public class SQLRecord
     /**
      * Get an optional String from this record
      *
-     * @param column The column containg the String
+     * @param column The column containing the String
      * @return The optional String value
      * @throws SQLFaultException If the column is unknown or if the value cannot be returned
      */
@@ -105,7 +97,7 @@ public class SQLRecord
     /**
      * Get an optional {@link Blob} from this record
      *
-     * @param column The column containg the Blob
+     * @param column The column containing the Blob
      * @return The optional Blob value
      * @throws SQLFaultException If the column is unknown or if the value cannot be returned
      */
@@ -122,7 +114,7 @@ public class SQLRecord
     /**
      * Get an optional {@link Clob} from this record
      *
-     * @param column The column containg the Clob
+     * @param column The column containing the Clob
      * @return The optional Clob value
      * @throws SQLFaultException If the column is unknown or if the value cannot be returned
      */
@@ -139,7 +131,7 @@ public class SQLRecord
     /**
      * Get an optional {@link BigDecimal} from this record
      *
-     * @param column The column containg the BigDecimal
+     * @param column The column containing the BigDecimal
      * @return The optional BigDecimal value
      * @throws SQLFaultException If the column is unknown or if the value cannot be returned
      */
@@ -156,7 +148,7 @@ public class SQLRecord
     /**
      * Get an optional byte array from this record
      *
-     * @param column The column containg the byte array
+     * @param column The column containing the byte array
      * @return The optional byte array value
      * @throws SQLFaultException If the column is unknown or if the value cannot be returned
      */
@@ -173,7 +165,7 @@ public class SQLRecord
     /**
      * Get an optional Integer from this record
      *
-     * @param column The column containg the Integer
+     * @param column The column containing the Integer
      * @return The optional Integer value
      * @throws SQLFaultException If the column is unknown or if the value cannot be returned
      */
@@ -195,7 +187,7 @@ public class SQLRecord
     /**
      * Get an optional Float from this record
      *
-     * @param column The column containg the Float
+     * @param column The column containing the Float
      * @return The optional Float value
      * @throws SQLFaultException If the column is unknown or if the value cannot be returned
      */
@@ -217,7 +209,7 @@ public class SQLRecord
     /**
      * Get an optional Long from this record
      *
-     * @param column The column containg the Long
+     * @param column The column containing the Long
      * @return The optional Long value
      * @throws SQLFaultException If the column is unknown or if the value cannot be returned
      */
@@ -239,7 +231,7 @@ public class SQLRecord
     /**
      * Get an optional Short from this record
      *
-     * @param column The column containg the Short
+     * @param column The column containing the Short
      * @return The optional Short value
      * @throws SQLFaultException If the column is unknown or if the value cannot be returned
      */
@@ -261,7 +253,7 @@ public class SQLRecord
     /**
      * Get an optional {@link LocalDate} from this record
      *
-     * @param column The column containg the LocalDate
+     * @param column The column containing the LocalDate
      * @return The optional LocalDate value
      * @throws SQLFaultException If the column is unknown or if the value cannot be returned
      */
@@ -270,7 +262,7 @@ public class SQLRecord
     {
         try {
             Date date = rs.getDate( column );
-            return Optional.ofNullable( date).map( Date::toLocalDate );
+            return Optional.ofNullable( date ).map( Date::toLocalDate );
 
         } catch ( SQLException ex ) {
             throw new SQLFaultException( "Error getting SQL value", ex );
@@ -280,7 +272,7 @@ public class SQLRecord
     /**
      * Get an optional {@link Instant} from this record
      *
-     * @param column The column containg the Instant
+     * @param column The column containing the Instant
      * @return The optional Instant value
      * @throws SQLFaultException If the column is unknown or if the value cannot be returned
      */
@@ -289,7 +281,7 @@ public class SQLRecord
     {
         try {
             Timestamp ts = rs.getTimestamp( column );
-            return Optional.ofNullable( ts).map( Timestamp::toInstant );
+            return Optional.ofNullable( ts ).map( Timestamp::toInstant );
 
         } catch ( SQLException ex ) {
             throw new SQLFaultException( "Error getting SQL value", ex );
@@ -299,7 +291,7 @@ public class SQLRecord
     /**
      * Get an optional {@link LocalTime} from this record
      *
-     * @param column The column containg the LocalTime
+     * @param column The column containing the LocalTime
      * @return The optional LocalTime value
      * @throws SQLFaultException If the column is unknown or if the value cannot be returned
      */
@@ -308,7 +300,7 @@ public class SQLRecord
     {
         try {
             Time time = rs.getTime( column );
-            return Optional.ofNullable( time).map( Time::toLocalTime );
+            return Optional.ofNullable( time ).map( Time::toLocalTime );
 
         } catch ( SQLException ex ) {
             throw new SQLFaultException( "Error getting SQL value", ex );
@@ -318,7 +310,7 @@ public class SQLRecord
     /**
      * Get an optional Boolean from this record
      *
-     * @param column The column containg the Boolean
+     * @param column The column containing the Boolean
      * @return The optional Boolean value
      * @throws SQLFaultException If the column is unknown or if the value cannot be returned
      */
@@ -334,6 +326,63 @@ public class SQLRecord
 
         } catch ( SQLException ex ) {
             throw new SQLFaultException( "Error getting SQL value", ex );
+        }
+    }
+
+    /**
+     * Represents a column in a {@link SQLRecord}
+     */
+    public static class Column
+    {
+        private final String name;
+        private final String table;
+
+        private Column( String name, String table )
+        {
+            this.name = name;
+            this.table = table;
+        }
+
+        /**
+         * Get the column name
+         *
+         * @return The name
+         */
+        public String getName()
+        {
+            return name;
+        }
+
+        /**
+         * Get the table name containing the column
+         *
+         * @return The table name
+         */
+        public String getTable()
+        {
+            return table;
+        }
+
+        @Override
+        public boolean equals( Object obj )
+        {
+            if ( obj instanceof Column ) {
+                Column col = ( Column ) obj;
+                return table.equals( col.table ) && name.equals( col.name );
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return 253543 + Objects.hash( name, table );
+        }
+
+        @Override
+        public String toString()
+        {
+            return table + "." + name;
         }
     }
 

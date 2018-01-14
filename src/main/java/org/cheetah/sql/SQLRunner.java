@@ -40,12 +40,12 @@ public class SQLRunner
 
     private final Connection conn;
 
-    public SQLRunner(Connection conn )
+    public SQLRunner( Connection conn )
     {
         this.conn = conn;
     }
 
-    public SQLRunner(HasSQLConnection tx )
+    public SQLRunner( HasSQLConnection tx )
     {
         this.conn = tx.getConnection();
     }
@@ -62,7 +62,7 @@ public class SQLRunner
     public <T> List<T> query( SQLRecordMapper<T> mapper, SQLQueryBuilder query )
             throws SQLFaultException
     {
-        try ( PreparedStatement st = prepareStatement( query ) ) {
+        try ( PreparedStatement st = prepareStatement( query, false ) ) {
             try ( ResultSet rs = st.executeQuery() ) {
                 List<T> list = new ArrayList<>();
                 while ( rs.next() ) {
@@ -88,7 +88,7 @@ public class SQLRunner
     public <T> T querySingle( SQLRecordMapper<T> mapper, SQLQueryBuilder query )
             throws SQLFaultException
     {
-        try ( PreparedStatement st = prepareStatement( query ) ) {
+        try ( PreparedStatement st = prepareStatement( query, false ) ) {
             try ( ResultSet rs = st.executeQuery() ) {
                 if ( rs.next() ) {
                     return mapper.buildEntity( new SQLRecord( rs ) );
@@ -109,13 +109,17 @@ public class SQLRunner
      * @param mapper    The mapper used to build Java entities
      * @param fetchSize The fetch size. Limits the memory usage. The value depends on the SQL driver. If null, the whole
      *                  entities will be stored in the memory.
+     * @param updatable true to indicate if the iterator can change entities during iteration (this consumes more memory)
      * @param query     The query to select the entities
      * @return The iterator handling the entities. Do not forget to close the iterator after the process.
      */
-    public <T> SQLIterator<T> queryIterator( SQLRecordMapper<T> mapper, Integer fetchSize, SQLQueryBuilder query )
+    public <T> SQLIterator<T> queryIterator( SQLRecordMapper<T> mapper,
+                                             Integer fetchSize,
+                                             boolean updatable,
+                                             SQLQueryBuilder query )
     {
         try {
-            PreparedStatement st = prepareStatement( query );
+            PreparedStatement st = prepareStatement( query, updatable );
             if ( fetchSize != null ) {
                 st.setFetchSize( fetchSize );
             }
@@ -127,11 +131,22 @@ public class SQLRunner
         }
     }
 
+    /**
+     * Select entities from a given SQL query. The results are returned via an iterator to limit memory usage. It is
+     * useful when getting large entities count.
+     *
+     * @param <T>       The entities type
+     * @param mapper    The mapper used to build Java entities
+     * @param fetchSize The fetch size. Limits the memory usage. The value depends on the SQL driver. If null, the whole
+     *                  entities will be stored in the memory.
+     * @param query     The query to select the entities
+     * @return The iterator handling the entities. Do not forget to close the iterator after the process.
+     */
     public <T> Stream<T> queryAsStream( SQLRecordMapper<T> mapper, Integer fetchSize, SQLQueryBuilder query )
     {
-        SQLIterator<T> iterator = queryIterator( mapper, fetchSize, query );
+        SQLIterator<T> iterator = queryIterator( mapper, fetchSize, false, query );
         Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize( iterator, Spliterator.ORDERED | Spliterator.IMMUTABLE );
-        return StreamSupport.stream( spliterator, false );
+        return StreamSupport.stream( spliterator, false ).onClose( iterator::close );
     }
 
     /**
@@ -144,7 +159,7 @@ public class SQLRunner
     public long count( SQLQueryBuilder query )
             throws SQLFaultException
     {
-        try ( PreparedStatement st = prepareStatement( query ) ) {
+        try ( PreparedStatement st = prepareStatement( query, false ) ) {
             try ( ResultSet rs = st.executeQuery() ) {
                 if ( rs.next() ) {
                     return rs.getLong( 1 );
@@ -167,7 +182,7 @@ public class SQLRunner
     public int execute( SQLQueryBuilder query )
             throws SQLFaultException
     {
-        try ( PreparedStatement st = prepareStatement( query ) ) {
+        try ( PreparedStatement st = prepareStatement( query, false ) ) {
             return st.executeUpdate();
 
         } catch ( SQLException ex ) {
@@ -175,10 +190,12 @@ public class SQLRunner
         }
     }
 
-    private PreparedStatement prepareStatement( SQLQueryBuilder query )
+    private PreparedStatement prepareStatement( SQLQueryBuilder query, boolean updatable )
             throws SQLException
     {
-        PreparedStatement st = conn.prepareStatement( query.query.toString(), ResultSet.TYPE_FORWARD_ONLY );
+        PreparedStatement st = conn.prepareStatement( query.query.toString(),
+                                                      ResultSet.TYPE_FORWARD_ONLY,
+                                                      updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY );
         int index = 1;
         for ( Object obj : query.params ) {
             if ( obj instanceof LocalDate ) {
