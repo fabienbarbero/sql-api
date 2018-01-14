@@ -203,7 +203,7 @@ public class SQLTransaction
 
         private final int value;
 
-        private IsolationLevel( int value )
+        IsolationLevel( int value )
         {
             this.value = value;
         }

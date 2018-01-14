@@ -48,8 +48,8 @@ public class SQLiteTest
 
         try (SQLTransaction tx = SQLTransaction.begin( ds )) {
             ensureUserTableCreated( tx );
-            SQLExecutor exec = new SQLExecutor( tx );
-            exec.execute( SQLQuery.of( "delete from USERS" ) );
+            SQLRunner exec = new SQLRunner( tx );
+            exec.execute( new SQLQueryBuilder( "delete from USERS" ) );
             tx.commit();
         }
     }
@@ -66,23 +66,23 @@ public class SQLiteTest
             throws Exception
     {
         try (SQLTransaction tx = SQLTransaction.begin( ds )) {
-            SQLExecutor exec = new SQLExecutor( tx );
+            SQLRunner exec = new SQLRunner( tx );
             UserDAO userDAO = new UserDAOImpl( tx );
 
             // Create new table
-            assertEquals( 0, exec.count( SQLQuery.of( "select count(*) from USERS" ) ) );
+            assertEquals( 0, exec.count( new SQLQueryBuilder( "select count(*) from USERS" ) ) );
 
             // Insert new entity
             User user = User.newInstance( "john doe", "john@doe.com" );
             userDAO.addEntity( user );
 
-            assertEquals( 1, exec.count( SQLQuery.of( "select count(*) from USERS" ) ) );
+            assertEquals( 1, exec.count( new SQLQueryBuilder( "select count(*) from USERS" ) ) );
             assertEquals( user, userDAO.find( user.getUuid() ) );
             assertEquals( user, userDAO.findByEmail( "john@doe.com" ) );
             assertEquals( "john doe", userDAO.findByEmail( "john@doe.com" ).getName() );
             assertEquals( "john@doe.com", userDAO.findByEmail( "john@doe.com" ).getEmail() );
 
-            assertNotNull( userDAO.find( "1234567890" ) );
+            assertNull( userDAO.find( "1234567890" ) );
             assertNull( userDAO.findByEmail( "jane@doe.com" ) );
 
             userDAO.deleteEntity( user );
@@ -95,25 +95,25 @@ public class SQLiteTest
             throws Exception
     {
         try (SQLTransaction tx1 = SQLTransaction.begin( ds )) {
-            SQLExecutor exec = new SQLExecutor( tx1 );
+            SQLRunner exec = new SQLRunner( tx1 );
             UserDAO userDAO = new UserDAOImpl( tx1 );
 
             // Create new table
             ensureUserTableCreated( tx1 );
             tx1.commit();
-            assertEquals( 0, exec.count( SQLQuery.of( "select count(*) from USERS" ) ) );
+            assertEquals( 0, exec.count( new SQLQueryBuilder( "select count(*) from USERS" ) ) );
 
             // Insert new entity
             User user = User.newInstance( "john doe", "john@doe.com" );
             userDAO.addEntity( user );
 
-            assertEquals( 1, exec.count( SQLQuery.of( "select count(*) from USERS" ) ) );
+            assertEquals( 1, exec.count( new SQLQueryBuilder( "select count(*) from USERS" ) ) );
 
             try (SQLTransaction tx2 = SQLTransaction.begin( ds )) {
-                SQLExecutor exec2 = new SQLExecutor( tx2 );
+                SQLRunner exec2 = new SQLRunner( tx2 );
 
                 // First transaction has not commited
-                assertEquals( 0, exec2.count( SQLQuery.of( "select count(*) from USERS" ) ) );
+                assertEquals( 0, exec2.count( new SQLQueryBuilder( "select count(*) from USERS" ) ) );
             }
             
             tx1.commit();
@@ -121,8 +121,8 @@ public class SQLiteTest
 
         // Another transaction
         try (SQLTransaction tx = SQLTransaction.begin( ds )) {
-            SQLExecutor exec = new SQLExecutor( tx );
-            assertEquals( 1, exec.count( SQLQuery.of( "select count(*) from USERS" ) ) );
+            SQLRunner exec = new SQLRunner( tx );
+            assertEquals( 1, exec.count( new SQLQueryBuilder( "select count(*) from USERS" ) ) );
         }
     }
 
@@ -131,33 +131,33 @@ public class SQLiteTest
             throws Exception
     {
         try (SQLTransaction tx = SQLTransaction.begin( ds )) {
-            SQLExecutor exec = new SQLExecutor( tx );
+            SQLRunner exec = new SQLRunner( tx );
             UserDAO userDAO = new UserDAOImpl( tx );
 
             // Create new table
-            assertEquals( 0, exec.count( SQLQuery.of( "select count(*) from USERS" ) ) );
+            assertEquals( 0, exec.count( new SQLQueryBuilder( "select count(*) from USERS" ) ) );
 
             // Insert new entity
             User user = User.newInstance( "john doe", "john@doe.com" );
             userDAO.addEntity( user );
 
-            assertEquals( 1, exec.count( SQLQuery.of( "select count(*) from USERS" ) ) );
+            assertEquals( 1, exec.count( new SQLQueryBuilder( "select count(*) from USERS" ) ) );
             tx.rollback();
         }
 
         // Another transaction
         try (SQLTransaction tx = SQLTransaction.begin( ds )) {
-            SQLExecutor exec = new SQLExecutor( tx );
-            assertEquals( 0, exec.count( SQLQuery.of( "select count(*) from USERS" ) ) );
+            SQLRunner exec = new SQLRunner( tx );
+            assertEquals( 0, exec.count( new SQLQueryBuilder( "select count(*) from USERS" ) ) );
         }
     }
 
     private void ensureUserTableCreated( SQLTransaction tx )
     {
-        SQLExecutor exec = new SQLExecutor( tx );
+        SQLRunner exec = new SQLRunner( tx );
         SQLHelper helper = new SQLHelper( tx );
         if ( !helper.isTableExists( "USERS" ) ) {
-            exec.execute( SQLQuery.of( "create table USERS ("
+            exec.execute( new SQLQueryBuilder( "create table USERS ("
                                        + "UUID char(36) primary key, "
                                        + "NAME varchar(128) not null, "
                                        + "EMAIL varchar(128) not null)" ) );

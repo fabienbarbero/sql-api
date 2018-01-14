@@ -18,34 +18,36 @@
  */
 package org.cheetah.sql;
 
-import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Fabien Barbero
  */
-public class SQLFaultException
-        extends RuntimeException
+public class SQLQueryBuilder
 {
 
-    public SQLFaultException( String msg, SQLException ex )
+
+    final StringBuilder query = new StringBuilder();
+    final List<Object> params = new ArrayList<>();
+
+    public SQLQueryBuilder()
     {
-        super( msg, ex );
     }
 
-    /**
-     * Get the SQL error code.
-     *
-     * @return The error code
-     */
-    public int getErrorCode()
+    public SQLQueryBuilder( String queryPart, Object... params )
     {
-        return getCause().getErrorCode();
+        append( queryPart, params );
     }
 
-    @Override
-    public synchronized SQLException getCause()
+    public SQLQueryBuilder append( String queryPart, Object... params )
     {
-        return ( SQLException ) super.getCause();
+        query.append( queryPart );
+        if( params.length > 0 ) {
+            this.params.addAll( Arrays.asList( params ) );
+        }
+        return this;
     }
 
 }

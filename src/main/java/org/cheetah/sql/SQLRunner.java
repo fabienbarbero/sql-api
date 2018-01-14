@@ -35,17 +35,17 @@ import java.util.stream.StreamSupport;
 /**
  * @author Fabien Barbero
  */
-public class SQLExecutor
+public class SQLRunner
 {
 
     private final Connection conn;
 
-    public SQLExecutor( Connection conn )
+    public SQLRunner(Connection conn )
     {
         this.conn = conn;
     }
 
-    public SQLExecutor( HasSQLConnection tx )
+    public SQLRunner(HasSQLConnection tx )
     {
         this.conn = tx.getConnection();
     }
@@ -59,7 +59,7 @@ public class SQLExecutor
      * @return The entities found
      * @throws SQLFaultException Query error
      */
-    public <T> List<T> query( SQLRecordMapper<T> mapper, SQLQuery query )
+    public <T> List<T> query( SQLRecordMapper<T> mapper, SQLQueryBuilder query )
             throws SQLFaultException
     {
         try ( PreparedStatement st = prepareStatement( query ) ) {
@@ -85,12 +85,12 @@ public class SQLExecutor
      * @return The optional entity found
      * @throws SQLFaultException Query error
      */
-    public <T> T querySingle( SQLRecordMapper<T> mapper, SQLQuery query )
+    public <T> T querySingle( SQLRecordMapper<T> mapper, SQLQueryBuilder query )
             throws SQLFaultException
     {
         try ( PreparedStatement st = prepareStatement( query ) ) {
             try ( ResultSet rs = st.executeQuery() ) {
-                while ( rs.next() ) {
+                if ( rs.next() ) {
                     return mapper.buildEntity( new SQLRecord( rs ) );
                 }
                 return null;
@@ -112,7 +112,7 @@ public class SQLExecutor
      * @param query     The query to select the entities
      * @return The iterator handling the entities. Do not forget to close the iterator after the process.
      */
-    public <T> SQLIterator<T> queryIterator( SQLRecordMapper<T> mapper, Integer fetchSize, SQLQuery query )
+    public <T> SQLIterator<T> queryIterator( SQLRecordMapper<T> mapper, Integer fetchSize, SQLQueryBuilder query )
     {
         try {
             PreparedStatement st = prepareStatement( query );
@@ -127,7 +127,7 @@ public class SQLExecutor
         }
     }
 
-    public <T> Stream<T> queryAsStream( SQLRecordMapper<T> mapper, Integer fetchSize, SQLQuery query )
+    public <T> Stream<T> queryAsStream( SQLRecordMapper<T> mapper, Integer fetchSize, SQLQueryBuilder query )
     {
         SQLIterator<T> iterator = queryIterator( mapper, fetchSize, query );
         Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize( iterator, Spliterator.ORDERED | Spliterator.IMMUTABLE );
@@ -141,13 +141,13 @@ public class SQLExecutor
      * @return The counted entities
      * @throws SQLFaultException Query error
      */
-    public int count( SQLQuery query )
+    public long count( SQLQueryBuilder query )
             throws SQLFaultException
     {
         try ( PreparedStatement st = prepareStatement( query ) ) {
             try ( ResultSet rs = st.executeQuery() ) {
                 if ( rs.next() ) {
-                    return rs.getInt( 1 );
+                    return rs.getLong( 1 );
                 }
                 return 0;
             }
@@ -164,7 +164,7 @@ public class SQLExecutor
      * @return The modified record count
      * @throws SQLFaultException Query error
      */
-    public int execute( SQLQuery query )
+    public int execute( SQLQueryBuilder query )
             throws SQLFaultException
     {
         try ( PreparedStatement st = prepareStatement( query ) ) {
@@ -175,7 +175,7 @@ public class SQLExecutor
         }
     }
 
-    private PreparedStatement prepareStatement( SQLQuery query )
+    private PreparedStatement prepareStatement( SQLQueryBuilder query )
             throws SQLException
     {
         PreparedStatement st = conn.prepareStatement( query.query.toString(), ResultSet.TYPE_FORWARD_ONLY );

@@ -18,34 +18,16 @@
  */
 package org.cheetah.sql;
 
-import java.sql.SQLException;
-
 /**
  * @author Fabien Barbero
  */
-public class SQLFaultException
-        extends RuntimeException
+public abstract class UUIDBaseDAO<E extends UUIDBaseEntity>
+        extends AbstractBaseDAO<E, String>
 {
 
-    public SQLFaultException( String msg, SQLException ex )
+    public UUIDBaseDAO( String tableName, HasSQLConnection conn )
     {
-        super( msg, ex );
+        super( tableName, "UUID", conn );
     }
-
-    /**
-     * Get the SQL error code.
-     *
-     * @return The error code
-     */
-    public int getErrorCode()
-    {
-        return getCause().getErrorCode();
-    }
-
-    @Override
-    public synchronized SQLException getCause()
-    {
-        return ( SQLException ) super.getCause();
-    }
-
+    
 }

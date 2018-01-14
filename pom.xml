@@ -21,7 +21,7 @@
         <developerConnection>scm:git:git@github.com:fabienbarbero/sql-api.git</developerConnection>
         <url>https://github.com/fabienbarbero/sql-api</url>
     </scm>
-    
+
     <developers>
         <developer>
             <id>fabien.barbero</id>
@@ -57,6 +57,6 @@
             <version>3.8.11.2</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
+
 </project>

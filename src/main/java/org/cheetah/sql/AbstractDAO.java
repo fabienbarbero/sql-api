@@ -18,34 +18,28 @@
  */
 package org.cheetah.sql;
 
-import java.sql.SQLException;
+import java.util.List;
 
 /**
  * @author Fabien Barbero
  */
-public class SQLFaultException
-        extends RuntimeException
+public abstract class AbstractDAO<E extends Entity>
+        extends SQLRunner
+        implements DAO<E>, SQLRecordMapper<E>
 {
+    protected final String tableName;
 
-    public SQLFaultException( String msg, SQLException ex )
+    public AbstractDAO( String tableName, HasSQLConnection conn )
     {
-        super( msg, ex );
-    }
-
-    /**
-     * Get the SQL error code.
-     *
-     * @return The error code
-     */
-    public int getErrorCode()
-    {
-        return getCause().getErrorCode();
+        super( conn );
+        this.tableName = tableName;
     }
 
     @Override
-    public synchronized SQLException getCause()
+    public List<E> findAll()
+            throws SQLFaultException
     {
-        return ( SQLException ) super.getCause();
+        return query( this, new SQLQueryBuilder( "select * from " + tableName ) );
     }
 
 }

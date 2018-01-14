@@ -18,8 +18,6 @@
  */
 package org.cheetah.sql;
 
-import java.util.Optional;
-
 /**
  * DAO using primary key
  *
@@ -27,7 +25,7 @@ import java.util.Optional;
  * @param <T>  The entity type
  * @param <PK> The primary key type
  */
-public interface BaseDAO<T extends Entity, PK>
+public interface BaseDAO<T extends BaseEntity<PK>, PK>
         extends DAO<T>
 {
 

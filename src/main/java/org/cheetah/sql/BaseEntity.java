@@ -18,32 +18,13 @@
  */
 package org.cheetah.sql;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 /**
- *
  * @author Fabien Barbero
  */
-public class SQLQuery
+public interface BaseEntity<PK>
+        extends Entity
 {
 
-    public static SQLQuery of( String queryPart, Object... params )
-    {
-        return new SQLQuery().append( queryPart, params );
-    }
-
-    final StringBuilder query = new StringBuilder();
-    final List<Object> params = new ArrayList<>();
-
-    public SQLQuery append( String queryPart, Object... params )
-    {
-        query.append( queryPart );
-        if ( params.length > 0 ) {
-            this.params.addAll( Arrays.asList( params ) );
-        }
-        return this;
-    }
+    PK getPrimaryKey();
 
 }

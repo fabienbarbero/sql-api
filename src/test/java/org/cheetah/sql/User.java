@@ -26,7 +26,7 @@ import java.util.UUID;
  * @author Fabien Barbero
  */
 class User
-        implements Entity
+        implements BaseEntity<String>
 {
 
     public static User newInstance( String name, String email )
@@ -87,6 +87,12 @@ class User
         int hash = 7;
         hash = 67 * hash + Objects.hashCode( this.uuid );
         return hash;
+    }
+
+    @Override
+    public String getPrimaryKey()
+    {
+        return uuid;
     }
 
 }

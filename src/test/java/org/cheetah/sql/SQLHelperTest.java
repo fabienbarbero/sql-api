@@ -63,22 +63,22 @@ public class SQLHelperTest
             throws Exception
     {
         try (Connection conn = ds.getConnection()) {
-            SQLExecutor exec = new SQLExecutor( conn );
+            SQLRunner exec = new SQLRunner( conn );
             SQLHelper helper = new SQLHelper( conn );
 
             // Create tables
             if ( !helper.isTableExists( "USERS" ) ) {
-                exec.execute( SQLQuery.of( "create table USERS ("
+                exec.execute( new SQLQueryBuilder( "create table USERS ("
                                            + "UUID char(36) primary key, "
                                            + "NAME varchar(128) not null, "
                                            + "EMAIL varchar(128) not null)" ) );
             }
-            exec.execute( SQLQuery.of( "create table ORDERS ("
+            exec.execute( new SQLQueryBuilder( "create table ORDERS ("
                                        + "UUID char(36) primary key,"
                                        + "VALUE varchar(128) not null,"
                                        + "USER_UUID char(36) not null,"
                                        + "foreign key (USER_UUID) references USERS(UUID) on delete cascade on update cascade )" ) );
-            exec.execute( SQLQuery.of( "create index value_idx on ORDERS (VALUE)" ) );
+            exec.execute( new SQLQueryBuilder( "create index value_idx on ORDERS (VALUE)" ) );
 
             assertTrue( helper.isTableExists( "USERS" ) );
             assertTrue( helper.isTableExists( "ORDERS" ) );

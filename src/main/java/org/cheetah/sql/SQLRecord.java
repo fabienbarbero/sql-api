@@ -270,10 +270,7 @@ public class SQLRecord
     {
         try {
             Date date = rs.getDate( column );
-            if ( date == null ) {
-                return Optional.empty();
-            }
-            return Optional.of( date.toLocalDate() );
+            return Optional.ofNullable( date).map( Date::toLocalDate );
 
         } catch ( SQLException ex ) {
             throw new SQLFaultException( "Error getting SQL value", ex );
@@ -292,10 +289,7 @@ public class SQLRecord
     {
         try {
             Timestamp ts = rs.getTimestamp( column );
-            if ( ts == null ) {
-                return Optional.empty();
-            }
-            return Optional.of( ts.toInstant() );
+            return Optional.ofNullable( ts).map( Timestamp::toInstant );
 
         } catch ( SQLException ex ) {
             throw new SQLFaultException( "Error getting SQL value", ex );
@@ -314,10 +308,7 @@ public class SQLRecord
     {
         try {
             Time time = rs.getTime( column );
-            if ( time == null ) {
-                return Optional.empty();
-            }
-            return Optional.of( time.toLocalTime() );
+            return Optional.ofNullable( time).map( Time::toLocalTime );
 
         } catch ( SQLException ex ) {
             throw new SQLFaultException( "Error getting SQL value", ex );

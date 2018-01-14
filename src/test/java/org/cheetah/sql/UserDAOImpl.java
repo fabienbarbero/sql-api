@@ -19,7 +19,6 @@
 package org.cheetah.sql;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  *
@@ -29,11 +28,11 @@ class UserDAOImpl
         implements UserDAO, SQLRecordMapper<User>
 {
 
-    private final SQLExecutor executor;
+    private final SQLRunner executor;
 
     public UserDAOImpl( SQLTransaction tx )
     {
-        executor = new SQLExecutor( tx );
+        executor = new SQLRunner( tx );
     }
 
     @Override
@@ -50,7 +49,7 @@ class UserDAOImpl
     public void addEntity( User entity )
             throws SQLFaultException
     {
-        executor.execute( SQLQuery.of( "insert into USERS (UUID, EMAIL, NAME) values (?,?,?)",
+        executor.execute( new SQLQueryBuilder( "insert into USERS (UUID, EMAIL, NAME) values (?,?,?)",
                                        entity.getUuid(), entity.getEmail(), entity.getName() ) );
     }
 
@@ -58,7 +57,7 @@ class UserDAOImpl
     public void updateEntity( User entity )
             throws SQLFaultException
     {
-        executor.execute( SQLQuery.of( "update USERS set EMAIL=?, NAME=? where UUID=?",
+        executor.execute( new SQLQueryBuilder( "update USERS set EMAIL=?, NAME=? where UUID=?",
                                        entity.getEmail(), entity.getName(), entity.getUuid() ) );
     }
 
@@ -66,35 +65,35 @@ class UserDAOImpl
     public User findByEmail( String email )
             throws SQLFaultException
     {
-        return executor.querySingle( this, SQLQuery.of( "select * from USERS where EMAIL=?", email ) );
+        return executor.querySingle( this, new SQLQueryBuilder( "select * from USERS where EMAIL=?", email ) );
     }
 
     @Override
     public List<User> findAll()
             throws SQLFaultException
     {
-        return executor.query( this, SQLQuery.of( "select * from USERS" ) );
+        return executor.query( this, new SQLQueryBuilder( "select * from USERS" ) );
     }
 
     @Override
     public User find( String key )
             throws SQLFaultException
     {
-        return executor.querySingle( this, SQLQuery.of( "select * from USERS where UUID=?", key ) );
+        return executor.querySingle( this, new SQLQueryBuilder( "select * from USERS where UUID=?", key ) );
     }
 
     @Override
     public void deleteEntity( String key )
             throws SQLFaultException
     {
-        executor.execute( SQLQuery.of( "delete from USERS where UUID=?", key ) );
+        executor.execute( new SQLQueryBuilder( "delete from USERS where UUID=?", key ) );
     }
 
     @Override
     public void deleteEntity( User entity )
             throws SQLFaultException
     {
-        executor.execute( SQLQuery.of( "delete from USERS where UUID=?", entity.getUuid() ) );
+        executor.execute( new SQLQueryBuilder( "delete from USERS where UUID=?", entity.getUuid() ) );
     }
 
 }
