@@ -37,8 +37,8 @@ public class SQLIndex
     SQLIndex( ResultSet rs )
             throws SQLException
     {
-        this.name = rs.getString( "TABLE_NAME" );
-        this.tableName = rs.getString( "INDEX_NAME" );
+        this.name = rs.getString( "INDEX_NAME" );
+        this.tableName = rs.getString( "TABLE_NAME" );
         this.columnName = rs.getString( "COLUMN_NAME" );
         this.ordering = Ordering.from( rs.getString( "ASC_OR_DESC" ) );
     }
