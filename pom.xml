@@ -17,9 +17,9 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:git://github.com/fabienbarbero/sql-api.git</connection>
-        <developerConnection>scm:git:ssh://github.com:fabienbarbero/sql-api.git</developerConnection>
         <url>https://github.com/fabienbarbero/sql-api</url>
+        <connection>scm:git:git://github.com/fabienbarbero/sql-api.git</connection>
+        <developerConnection>scm:git:git@github.com:fabienbarbero/sql-api.git</developerConnection>
     </scm>
 
     <distributionManagement>
