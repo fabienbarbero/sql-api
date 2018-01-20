@@ -34,10 +34,10 @@ public class UserDAOImpl
         implements UserDAO, SQLRecordMapper<User>
 {
 
-    private final SQLExecutor executor;
+    private final SQLRunner runner;
 
     public UserDAOImpl( SQLTransaction tx ) {
-        executor = new SQLExecutor( tx );
+        runner = new SQLRunner( tx );
     }
 
     @Override
@@ -53,20 +53,20 @@ public class UserDAOImpl
     @Override
     public void addEntity( User entity )
             throws SQLFaultException {
-        executor.execute( SQLQuery.of( "insert into USERS (UUID, EMAIL, NAME) values (?,?,?)",
+        runner.execute( SQLQuery.of( "insert into USERS (UUID, EMAIL, NAME) values (?,?,?)",
                                        entity.getUuid(), entity.getEmail(), entity.getName() ) );
     }
 
     @Override
     public List<User> findAll()
             throws SQLFaultException {
-        return executor.query( this, SQLQuery.of( "select * from USERS" ) );
+        return runner.query( this, SQLQuery.of( "select * from USERS" ) );
     }
 
     @Override
     public Optional<User> find( String key )
             throws SQLFaultException {
-        return executor.querySingle( this, SQLQuery.of( "select * from USERS where UUID=?", key ) );
+        return runner.querySingle( this, SQLQuery.of( "select * from USERS where UUID=?", key ) );
     }
 
     // Other methods
@@ -80,7 +80,7 @@ ds.setEncoding( "UTF-8" );
 ds.setUrl( "jdbc:sqlite:test.db" );
 
 try (SQLTransaction tx = SQLTransaction.begin( ds )) {
-    SQLExecutor exec = new SQLExecutor( tx );
+    SQLRunner exec = new SQLRunner( tx );
     UserDAO userDAO = new UserDAOImpl( tx );
 
     // Create new table
