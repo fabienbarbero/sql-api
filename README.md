@@ -1,7 +1,17 @@
 # SQL API
-Cheetah SQL API is a lightweight library to handle SQL operations. **It is only compatible with Java8**.
+SQL API is a lightweight library to handle SQL operations. **It is only compatible with Java8+**.
 
 The use is simple as you will see. By default in Java SQLException must be caught ; here we use a RuntimeException (SQLFaultException).
+
+You can use the following dependency in your Maven projects :
+
+```xml
+<dependency>
+    <groupId>com.github.fabienbarbero</groupId>
+    <artifactId>sql-api</artifactId>
+    <version>1.0.1</version>
+</dependency>
+```
 
 ### Use of DAO
 Data access objects are useful when using SQL queries. For instance if we have to store users in a table we can create a class names UserDAO and some implementations for various SQL engine (MySQL, Oracle ...)
